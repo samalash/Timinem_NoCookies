@@ -7,7 +7,7 @@ Timinem is a Discord music bot first developed in Fall of 2022 which can play th
 - NodeJS installed
 - all dependencies listed in package.json installed
 - a [Discord Application/Bot user](https://discord.com/developers/applications)
-- a file called `.env` which contains `TOKEN=[Discord bot's secret Token]`
+- a file called `.env` which contains `TOKEN="[Discord bot's secret Token]"`
 - running the `deploy-commands.js` file to register commands with Discord by entering `node deploy-commands.js` in the command line
 - entering `node .` in the command line to run the bot
 
