@@ -292,7 +292,15 @@ module.exports = {
             serverQueue().player = player;
             currentSong = serverQueue().songs[0];
             var resource;
-            let stream = await playdl.stream(currentSong.url);
+            try {
+                let stream = await playdl.stream(currentSong.url);
+            } catch (error) {
+                console.log("# ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT #");
+                console.error(error);
+                console.log("# ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT #");
+                await interaction.editReply({ content: ":x: Error playing song. Please avoid playing age-restricted videos.", ephemeral: false });
+                return;
+            }
             console.log(currentSong.url);
             resource = createAudioResource(stream.stream, { inputType: stream.type, inlineVolume: true });
             resource.volume.setVolume(1);
