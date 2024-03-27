@@ -21,7 +21,8 @@ module.exports = {
     async execute(interaction) {
         const arg1 = interaction.options.getString("song");
         const voiceChannel = interaction.member.voice.channel;
-        var newQueue = false;
+        let newQueue = false;
+        let shouldReturn = false;
 
 
         function serverQueue() { return queue.get(interaction.guildId); }
@@ -292,15 +293,15 @@ module.exports = {
             serverQueue().player = player;
             currentSong = serverQueue().songs[0];
             var resource;
-            try {
-                let stream = await playdl.stream(currentSong.url);
-            } catch (error) {
-                console.log("# ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT #");
+            let stream = await playdl.stream(currentSong.url).catch(error => {
+                console.log("# ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT #");
                 console.error(error);
-                console.log("# ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT # # ERROR CAUGHT #");
-                await interaction.editReply({ content: ":x: Error playing song. Please avoid playing age-restricted videos.", ephemeral: false });
-                return;
-            }
+                console.log("# ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT # ERROR CAUGHT #");
+                interaction.editReply({ content: ":x: Error playing song. Please avoid playing age-restricted videos.", ephemeral: false });
+                serverQueue().songs.shift();
+                shouldReturn = true;
+            });
+            if (!stream) return;
             console.log(currentSong.url);
             resource = createAudioResource(stream.stream, { inputType: stream.type, inlineVolume: true });
             resource.volume.setVolume(1);
@@ -330,11 +331,13 @@ module.exports = {
                     serverQueue().songs.push(serverQueue().songs.shift());
                     console.log("qloop???");
                     playSequence();
+                    if (shouldReturn) return;
                     check();
                     // IF LOOP IS ON 'SONG' MODE, REPLAY CURRENT SONG
                 } else if (serverQueue().loop == "SONG") {
                     console.log("sloop???");
                     playSequence();
+                    if (shouldReturn) return;
                     check();
 
                     // IF LOOP IS OFF, PLAY NEXT SONG
@@ -342,6 +345,7 @@ module.exports = {
                     serverQueue().songs.shift();
                     if (serverQueue().songs.length > 0) {
                         playSequence();
+                        if (shouldReturn) return;
                         check();
                         // IF QUEUE EMPTY, SET PLAYING TO FALSE AND END SCRIPT
                     } else {
@@ -357,6 +361,7 @@ module.exports = {
             serverQueue().player.on('error', error => {
                 console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
                 playSequence();
+                if (shouldReturn) return;
             });
         }
 
@@ -371,6 +376,7 @@ module.exports = {
 
 
             playSequence();
+            if (shouldReturn) return;
             check();
 
 
@@ -389,6 +395,7 @@ module.exports = {
             await interaction.editReply({ content: "Searched: `" + arg1 + "`\n\nPlaying:\n`" + currentSong.title + "` (" + currentSong.url + ")\nDuration: `" + currentSong.durationRaw + "`", ephemeral: false });
 
             playSequence();
+            if (shouldReturn) return;
             check();
         }
 
